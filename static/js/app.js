@@ -8,11 +8,8 @@ var gauge = d3.select("gauge");
 // this function populates dropdown menu with IDs and draw charts by default (using the first ID)
 function init() {
     resetData(); // reset any previous data; see function definition below
-
     d3.json("data/samples.json").then((data => {
-        data.names.forEach((name => {
-            id.append("option").text(name);
-        }));
+        data.names.forEach((name => {id.append("option").text(name);}));
         plotCharts(id.property("value")); // plot charts with value ID changed in drop down menu; see function definition below
     })); 
 }
@@ -28,83 +25,54 @@ function resetData() {
 // create a function to read JSON and plot charts
 function plotCharts(id) {
     d3.json("data/samples.json").then((data => {
+        //filter the metadata for the ID selected
+        var filtered_md = data.metadata.filter(participant => participant.id == id)[0]; //filter the metadata (md) on the id selected, and rturn back the "id" key 
 
-        // ----------------------------------
-        // POPULATE DEMOGRAPHICS TABLE
-        // ----------------------------------
+        var wfreq = filtered_md.wfreq; //this variable will be for the gauge chart later
 
-        // filter the metadata for the ID chosen
-        var individualMetadata = data.metadata.filter(participant => participant.id == id)[0];
+        //for selected id, do the following to get info into demographic info table
+        Object.entries(filtered_md).forEach(([key, value]) => {
+            table.append("p").text(`${key}: ${value}`);
+        });
 
-        // get the wash frequency for gauge chart later
-        var wfreq = individualMetadata.wfreq;
-
-        // Iterate through each key and value in the metadata
-        Object.entries(individualMetadata).forEach(([key, value]) => {
-
-            var newList = table.append("ul");
-            newList.attr("class", "list-group list-group-flush");
-
-            // append a li item to the unordered list tag
-            var listItem = newList.append("li");
-
-            // change the class attributes of the list item for styling
-            listItem.attr("class", "list-group-item p-1 demo-text bg-transparent");
-
-            // add the key value pair from the metadata to the demographics list
-            listItem.text(`${key}: ${value}`);
-
-        }); // close forEach
-
-        // --------------------------------------------------
-        // RETRIEVE DATA FOR PLOTTING CHARTS
-        // --------------------------------------------------
-
-        // filter the samples for the ID chosen
-        var individualSample = data.samples.filter(sample => sample.id == id)[0];
+        // filter the samples data for the ID selected
+        var filtered_samples = data.samples.filter(sample => sample.id == id)[0];
 
         // create empty arrays to store sample data
-        var otuIds = [];
-        var otuLabels = [];
-        var sampleValues = [];
+        var otu_ids = [];
+        var otu_labels = [];
+        var sample_values = [];
 
-        // Iterate through each key and value in the sample to retrieve data for plotting
-        Object.entries(individualSample).forEach(([key, value]) => {
-
+        // Iterate through each key and value in the samples data and store to empty lists above for plotting
+        Object.entries(filtered_samples).forEach(([key, value]) => {
             switch (key) {
                 case "otu_ids":
-                    otuIds.push(value);
+                    otu_ids.push(value);
                     break;
                 case "sample_values":
-                    sampleValues.push(value);
+                    sample_values.push(value);
                     break;
                 case "otu_labels":
-                    otuLabels.push(value);
+                    otu_labels.push(value);
                     break;
-                    // case
                 default:
                     break;
-            } // close switch statement
-
-        }); // close forEach
+            }
+        });
 
         // slice and reverse the arrays to get the top 10 values, labels and IDs
-        var topOtuIds = otuIds[0].slice(0, 10).reverse();
-        var topOtuLabels = otuLabels[0].slice(0, 10).reverse();
-        var topSampleValues = sampleValues[0].slice(0, 10).reverse();
+        var top_otu_ids = otu_ids[0].slice(0, 10).reverse();
+        var topotu_labels = otu_labels[0].slice(0, 10).reverse();
+        var topsample_values = sample_values[0].slice(0, 10).reverse();
 
         // use the map function to store the IDs with "OTU" for labelling y-axis
-        var topOtuIdsFormatted = topOtuIds.map(otuID => "OTU " + otuID);
+        var top_otu_idsFormatted = top_otu_ids.map(otuID => "OTU " + otuID);
 
-        // ----------------------------------
-        // PLOT BAR CHART
-        // ----------------------------------
-
-        // create a trace
+        //plotting the bar chart
         var traceBar = {
-            x: topSampleValues,
-            y: topOtuIdsFormatted,
-            text: topOtuLabels,
+            x: topsample_values,
+            y: top_otu_idsFormatted,
+            text: topotu_labels,
             type: 'bar',
             orientation: 'h',
             marker: {
@@ -112,10 +80,8 @@ function plotCharts(id) {
             }
         };
 
-        // create the data array for plotting
         var dataBar = [traceBar];
 
-        // define the plot layout
         var layoutBar = {
             height: 500,
             width: 600,
@@ -142,32 +108,23 @@ function plotCharts(id) {
                 tickfont: { size: 14 }
             }
         }
-
-
-        // plot the bar chart to the "bar" div
         Plotly.newPlot("bar", dataBar, layoutBar);
 
-        // ----------------------------------
-        // PLOT BUBBLE CHART
-        // ----------------------------------
-
-        // create trace
+        //plotting the bubble chart
         var traceBub = {
-            x: otuIds[0],
-            y: sampleValues[0],
-            text: otuLabels[0],
+            x: otu_ids[0],
+            y: sample_values[0],
+            text: otu_labels[0],
             mode: 'markers',
             marker: {
-                size: sampleValues[0],
-                color: otuIds[0],
+                size: sample_values[0],
+                color: otu_ids[0],
                 colorscale: 'YlGnBu'
             }
         };
 
-        // create the data array for the plot
         var dataBub = [traceBub];
 
-        // define the plot layout
         var layoutBub = {
             font: {
                 family: 'Quicksand'
@@ -187,8 +144,6 @@ function plotCharts(id) {
             },
             showlegend: false,
         };
-
-        // plot the bubble chat to the appropriate div
         Plotly.newPlot('bubble', dataBub, layoutBub);
 
         // ----------------------------------
