@@ -66,39 +66,28 @@ function plotCharts(id) {
         var topsample_values = sample_values[0].slice(0, 10).reverse();
 
         // use the map function to store the IDs with "OTU" for labelling y-axis
-        var top_otu_idsFormatted = top_otu_ids.map(otuID => "OTU " + otuID);
+        var top_otu_ids_form = top_otu_ids.map(otuID => "OTU " + otuID);
 
         //plotting the bar chart
-        var traceBar = {
+        var bar_trace = {
             x: topsample_values,
-            y: top_otu_idsFormatted,
+            y: top_otu_ids_form,
             text: topotu_labels,
             type: 'bar',
             orientation: 'h',
-            marker: {
-                color: 'rgb(29,145,192)'
-            }
+            marker: {color: 'rgb(29,145,192)'}
         };
 
-        var dataBar = [traceBar];
+        var bar_data = [bar_trace];
 
-        var layoutBar = {
+        var bar_layout = {
             height: 500,
             width: 600,
-            font: {
-                family: 'Quicksand'
-            },
-            hoverlabel: {
-                font: {
-                    family: 'Quicksand'
-                }
-            },
+            font: {family: 'Quicksand'},
+            hoverlabel: {font: {family: 'Quicksand'}},
             title: {
                 text: `<b>Top OTUs for Test Subject ${id}</b>`,
-                font: {
-                    size: 18,
-                    color: 'rgb(34,94,168)'
-                }
+                font: {size: 18,color: 'rgb(34,94,168)'}
             },
             xaxis: {
                 title: "<b>Sample values<b>",
@@ -108,10 +97,10 @@ function plotCharts(id) {
                 tickfont: { size: 14 }
             }
         }
-        Plotly.newPlot("bar", dataBar, layoutBar);
+        Plotly.newPlot("bar", bar_data, bar_layout);
 
         //plotting the bubble chart
-        var traceBub = {
+        var bubble_trace = {
             x: otu_ids[0],
             y: sample_values[0],
             text: otu_labels[0],
@@ -123,17 +112,11 @@ function plotCharts(id) {
             }
         };
 
-        var dataBub = [traceBub];
+        var bubble_data = [bubble_trace];
 
-        var layoutBub = {
-            font: {
-                family: 'Quicksand'
-            },
-            hoverlabel: {
-                font: {
-                    family: 'Quicksand'
-                }
-            },
+        var bubble_layout = {
+            font: {family: 'Quicksand'},
+            hoverlabel: {font: {family: 'Quicksand'}},
             xaxis: {
                 title: "<b>OTU Id</b>",
                 color: 'rgb(34,94,168)'
@@ -144,19 +127,14 @@ function plotCharts(id) {
             },
             showlegend: false,
         };
-        Plotly.newPlot('bubble', dataBub, layoutBub);
+        Plotly.newPlot('bubble', bubble_data, bubble_layout);
 
-        // ----------------------------------
-        // PLOT GAUGE CHART (OPTIONAL)
-        // ----------------------------------
-
+        //plotting the gauge chart
         // if wfreq has a null value, make it zero for calculating pointer later
-        if (wfreq == null) {
-            wfreq = 0;
-        }
+        if (wfreq == null) {wfreq = 0;}
 
         // create an indicator trace for the gauge chart
-        var traceGauge = {
+        var gauge_trace = {
             domain: { x: [0, 1], y: [0, 1] },
             value: wfreq,
             type: "indicator",
@@ -165,11 +143,9 @@ function plotCharts(id) {
                 axis: {
                     range: [0, 9],
                     tickmode: 'linear',
-                    tickfont: {
-                        size: 15
-                    }
+                    tickfont: {size: 15}
                 },
-                bar: { color: 'rgba(8,29,88,0)' }, // making gauge bar transparent since a pointer is being used instead
+                bar: { color: 'rgba(8,29,88,0)' }, // makes gauge sections transparent to show the pointer
                 steps: [
                     { range: [0, 1], color: 'rgb(255,255,217)' },
                     { range: [1, 2], color: 'rgb(237,248,217)' },
@@ -188,8 +164,7 @@ function plotCharts(id) {
         var angle = (wfreq / 9) * 180;
 
         // calculate end points for triangle pointer path
-        var degrees = 180 - angle,
-            radius = .8;
+        var degrees = 180 - angle, radius = .8;
         var radians = degrees * Math.PI / 180;
         var x = radius * Math.cos(radians);
         var y = radius * Math.sin(radians);
@@ -202,10 +177,10 @@ function plotCharts(id) {
             pathEnd = ' Z';
         var path = mainPath + cX + " " + cY + pathEnd;
 
-        gaugeColors = ['rgb(8,29,88)', 'rgb(37,52,148)', 'rgb(34,94,168)', 'rgb(29,145,192)', 'rgb(65,182,196)', 'rgb(127,205,187)', 'rgb(199,233,180)', 'rgb(237,248,217)', 'rgb(255,255,217)', 'white']
+        gauge_colors = ['rgb(8,29,88)', 'rgb(37,52,148)', 'rgb(34,94,168)', 'rgb(29,145,192)', 'rgb(65,182,196)', 'rgb(127,205,187)', 'rgb(199,233,180)', 'rgb(237,248,217)', 'rgb(255,255,217)', 'white']
 
         // create a trace to draw the circle where the needle is centered
-        var traceNeedleCenter = {
+        var needle_trace = {
             type: 'scatter',
             showlegend: false,
             x: [0],
@@ -216,35 +191,23 @@ function plotCharts(id) {
         };
 
         // create a data array from the two traces
-        var dataGauge = [traceGauge, traceNeedleCenter];
+        var gauge_data = [gauge_trace, needle_trace];
 
         // define a layout for the chart
-        var layoutGauge = {
+        var gauge_layout = {
 
             // draw the needle pointer shape using path defined above
             shapes: [{
                 type: 'path',
                 path: path,
                 fillcolor: '850000',
-                line: {
-                    color: '850000'
-                }
+                line: {color: '850000'}
             }],
-            font: {
-                family: 'Quicksand'
-            },
-            hoverlabel: {
-                font: {
-                    family: 'Quicksand',
-                    size: 16
-                }
-            },
+            font: {family: 'Quicksand'},
+            hoverlabel: {font: {family: 'Quicksand',size: 16}},
             title: {
-                text: `<b>Test Subject ${id}</b><br><b>Belly Button Washing Frequency</b><br><br>Scrubs per Week`,
-                font: {
-                    size: 18,
-                    color: 'rgb(34,94,168)'
-                },
+                text: `<b>Belly Button Washing Frequency (scrubs per week)</b><br><b>For Test Subject ${id}</b><br><br>`,
+                font: {size: 18, color: 'rgb(34,94,168)'},
             },
             height: 500,
             width: 500,
@@ -263,26 +226,17 @@ function plotCharts(id) {
                 fixedrange: true // disable zoom
             }
         };
+        Plotly.newPlot('gauge', gauge_data, gauge_layout);
 
-        // plot the gauge chart
-        Plotly.newPlot('gauge', dataGauge, layoutGauge);
+    }));
 
-
-    })); // close .then function
-
-}; // close plotCharts() function
+};
 
 // when there is a change in the dropdown select menu, this function is called with the ID as a parameter
 function optionChanged(id) {
-
-    // reset the data
     resetData();
-
-    // plot the charts for this id
     plotCharts(id);
-
-
-} // close optionChanged function
+}
 
 // call the init() function for default data
 init();
